@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glamora Mall | Premium Cosmetics</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDzwuztoVapin4viXylvv7lqws5y14G2_s",
+    authDomain: "clan-of.firebaseapp.com",
+    projectId: "clan-of",
+    storageBucket: "clan-of.firebasestorage.app",
+    messagingSenderId: "801252939875",
+    appId: "1:801252939875:web:522233a3e4afe80e570056"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.db = db;
+  window.firestore = { collection, addDoc, getDocs, deleteDoc, doc };
+</script>
+
+<style>
+  :root {
+    --primary: #FF3D98; --secondary: #A855F7; --bg1: #FFEFFA; --bg2: #EAE4FF;
+    --card: rgba(255,255,255,0.7); --text: #1F2937; --green: #25D366;
+  }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+  body { background: linear-gradient(135deg, var(--bg1), var(--bg2)); color: var(--text); min-height: 100vh; }
+  body.no-scroll { overflow: hidden; }
+
+.bubbles { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; overflow: hidden; }
+.bubble { position: absolute; bottom: -100px; background: rgba(255,61,152,0.1); border-radius: 50%; animation: rise 20s infinite ease-in; }
+  @keyframes rise { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-120vh) scale(1.2); opacity: 0; } }
+
+  nav { background: rgba(255,255,255,0.8); backdrop-filter: blur(15px); padding: 15px 5%; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 999; box-shadow: 0 4px 30px rgba(0,0,0,0.1); }
+  nav.logo { font-size: 28px; font-weight: 800; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.nav-btn { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #fff; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+.nav-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(255,61,152,0.4); }
+
+.top-bar { background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); color: var(--primary); text-align: center; padding: 10px; font-weight: 600; }
+
+.search-box { display: flex; justify-content: center; padding: 25px 5%; }
+.search-box input { width: 50%; padding: 14px 20px; border: 2px solid transparent; background: rgba(255,255,255,0.8); border-radius: 50px 0 0 50px; outline: none; font-size: 15px; backdrop-filter: blur(10px); }
+.search-box button { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #fff; border: none; padding: 0 30px; border-radius: 0 50px 50px 0; cursor: pointer; font-weight: 700; }
+
+.offer-buttons { display: flex; gap: 15px; justify-content: center; padding: 20px 5%; flex-wrap: wrap; }
+.offer-btn { padding: 12px 30px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); color: var(--primary); transition: 0.3s; }
+.offer-btn.active { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #fff; transform: translateY(-3px); }
+
+  section { padding: 30px 5%; }
+  h3 { font-size: 26px; margin-bottom: 25px; text-align: center; font-weight: 800; }
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; }
+.product-card { background: var(--card); backdrop-filter: blur(20px); border-radius: 25px; padding: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.3); transition: 0.4s; animation: fadeInUp 0.6s ease; }
+.product-card:hover { transform: translateY(-12px) scale(1.03); box-shadow: 0 15px 40px rgba(255,61,152,0.25); }
+  @keyframes fadeInUp { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
+.product-card img { width: 100%; height: 240px; object-fit: cover; border-radius: 20px; }
+.tag { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #fff; padding: 6px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+.price { color: var(--primary); font-weight: 800; font-size: 20px; }
+.order-whatsapp { width: 100%; background: var(--green); color: #fff; border: none; padding: 14px; border-radius: 15px; margin-top: 12px; cursor: pointer; font-weight: 700; font-size: 15px; transition: 0.3s; }
+.order-whatsapp:hover { transform: scale(1.03); }
+
+  #admin-panel { position: fixed; top: 0; right: -400px; width: 400px; height: 100%; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); box-shadow: -5px 0 30px rgba(0,0,0,0.1); transition: 0.4s; z-index: 1001; padding: 25px; overflow-y: auto; }
+  #admin-panel.active { right: 0; }
+.pay-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: 700; margin-bottom: 10px; cursor: pointer; color: #fff; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: 0.3s; }
+.pay-btn:hover { transform: scale(1.02); }
+.admin-form input,.admin-form select { width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #eee; border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 15px; transition: 0.3s; }
+.admin-form input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(255,61,152,0.2); }
+
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.4s; }
+.modal.active { display: flex; }
+  @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+.modal-content { background: rgba(255,255,255,0.85); backdrop-filter: blur(25px); padding: 40px; border-radius: 25px; width: 90%; max-width: 450px; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.5s; }
+  @keyframes slideUp { from {transform: translateY(50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+.modal-logo { text-align: center; font-size: 32px; font-weight: 800; margin-bottom: 10px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.modal-subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; }
+.tabs { display: flex; background: rgba(0,0,0,0.05); border-radius: 50px; padding: 5px; margin-bottom: 25px; }
+.tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; font-weight: 700; border-radius: 50px; transition: 0.3s; color: #666; }
+.tab.active { background: linear-gradient(90deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 5px 15px rgba(255,61,152,0.3); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.input-icon { position: relative; }
+.input-icon input { padding-left: 45px; }
+.input-icon span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 18px; }
+.admin-note { background: rgba(255,61,152,0.1); padding: 10px; border-radius: 10px; font-size: 12px; text-align: center; margin-bottom: 15px; border-left: 3px solid var(--primary); }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1000; }
+.overlay.active { display: block; }
+.hidden { display: none!important; }
+
+  @media (max-width: 768px) {
+.search-box input { width: 70%; }
+.product-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    #admin-panel { width: 90%; right: -90%; }
+.modal-content { padding: 25px; }
+  }
+</style>
+</head>
+<body class="no-scroll">
+
+<div class="bubbles" id="bubbles"></div>
+<div class="top-bar">🔥 Cash on Delivery + WhatsApp Order Available</div>
+
+<nav>
+  <div class="logo">Glamora</div>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</nav>
+
+<div class="search-box">
+  <input type="text" id="search-input" placeholder="পণ্য সার্চ করুন..." onkeyup="searchProducts()">
+  <button onclick="searchProducts()">Search</button>
+</div>
+
+<div id="home-section">
+  <div class="offer-buttons">
+    <button class="offer-btn" onclick="filterProducts('hot')">🔥 Hot Deals</button>
+    <button class="offer-btn" onclick="filterProducts('cashback')">💎 Premium Cashback</button>
+    <button class="offer-btn active" onclick="filterProducts('all')">✨ All Products</button>
+  </div>
+  <section>
+    <h3 id="section-title">✨ All Products</h3>
+    <div class="product-grid" id="product-list"><p style="text-align:center;">Loading...</p></div>
+  </section>
+</div>
+
+<div class="overlay" onclick="toggleAdmin()"></div>
+<div id="admin-panel">
+  <button class="nav-btn" onclick="toggleAdmin()" style="background:#666; margin-bottom:15px;">⬅️ Back</button>
+  <h3>⚙️ Admin Panel</h3>
+  <button class="pay-btn" onclick="showAddProductForm()">+ Add New Product</button>
+  <div id="admin-product-list" style="margin-top:20px;"></div>
+</div>
+
+<div class="modal active" id="auth-modal">
+  <div class="modal-content">
+    <div class="modal-logo">Glamora</div>
+    <p class="modal-subtitle">Welcome Back! Please login to continue</p>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">👤 User Login</div>
+      <div class="tab" onclick="switchTab('register')">✨ Register</div>
+      <div class="tab" onclick="switchTab('admin')">⚙️ Admin</div>
+    </div>
+
+    <div id="login-tab" class="tab-content active">
+      <div class="admin-form">
+        <div class="input-icon"><span>📧</span><input type="email" id="login-email" placeholder="Enter your email"></div>
+        <div class="input-icon"><span>🔒</span><input type="password" id="login-pass" placeholder="Enter your password"></div>
+        <button class="pay-btn" onclick="handleLogin('user')">Login Now</button>
+      </div>
+    </div>
+
+    <div id="register-tab" class="tab-content">
+      <div class="admin-form">
+        <div class="input-icon"><span>👤</span><input type="text" id="reg-name" placeholder="Full Name"></div>
+        <div class="input-icon"><span>📧</span><input type="email" id="reg-email" placeholder="Email Address"></div>
+        <div class="input-icon"><span>🔒</span><input type="password" id="reg-pass" placeholder="Create Password"></div>
+        <button class="pay-btn" onclick="userRegister()">Create Account</button>
+      </div>
+    </div>
+
+    <div id="admin-tab" class="tab-content">
+      <div class="admin-note">
+        <b>Admin Access:</b><br>
+        Email: admin@glamora.com<br>
+        Pass: admin123
+      </div>
+      <div class="admin-form">
+        <div class="input-icon"><span>👑</span><input type="email" id="admin-email" placeholder="Admin Email"></div>
+        <div class="input-icon"><span>🔑</span><input type="password" id="admin-pass" placeholder="Admin Password"></div>
+        <button class="pay-btn" onclick="handleLogin('admin')">Admin Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="product-modal">
+  <div class="modal-content">
+    <h4>Add Product</h4>
+    <div class="admin-form">
+      <input type="text" id="p-name" placeholder="Product Name">
+      <input type="number" id="p-price" placeholder="Price">
+      <input type="number" id="p-old" placeholder="Old Price">
+      <input type="file" id="p-img-file" accept="image/*" onchange="previewImage(event)">
+      <img id="p-img-preview" style="width:100px; height:100px; object-fit:cover; border-radius:8px; margin-top:10px; display:none;">
+      <input type="hidden" id="p-img">
+      <select id="p-tag"><option>New</option><option>Hot</option><option>-20%</option></select>
+      <select id="p-category"><option value="normal">Normal</option><option value="hot">Hot Deals</option><option value="cashback">Premium Cashback</option></select>
+      <button class="pay-btn" onclick="saveProduct()">Save Product</button>
+      <button onclick="closeProductModal()" style="background:#ccc; color:#000;" class="pay-btn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+  const YOUR_NUMBER = "8801742558366"; // আপনার WhatsApp নাম্বার
+
+  const { collection, addDoc, getDocs, deleteDoc, doc } = window.firestore;
+  const db = window.db;
+
+  let users = JSON.parse(localStorage.getItem('users')) || [{name: "Admin", email: "admin@glamora.com", pass: "admin123", role: "admin"}];
+  let products = [];
+
+  for(let i=0; i<15; i++) {
+    let bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+    bubble.style.width = Math.random() * 80 + 20 + 'px';
+    bubble.style.height = bubble.style.width;
+    bubble.style.left = Math.random() * 100 + '%';
+    bubble.style.animationDuration = Math.random() * 10 + 15 + 's';
+    bubble.style.animationDelay = Math.random() * 5 + 's';
+    document.getElementById('bubbles').appendChild(bubble);
+  }
+
+  function saveUsers() {
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }
+
+  async function loadProductsFromFirebase() {
+    const querySnapshot = await getDocs(collection(db, "products"));
+    products = [];
+    querySnapshot.forEach((docSnap) => {
+      products.push({id: docSnap.id,...docSnap.data()});
+    });
+    loadProducts();
+  }
+
+  window.onload = async function() {
+    await loadProductsFromFirebase();
+    if(currentUser) { closeAuth(); if(currentUser.role === 'admin') { loadAdminPanel(); toggleAdmin(); } }
+    else { document.getElementById('auth-modal').classList.add('active'); }
+  }
+
+  window.previewImage = function(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function() {
+      document.getElementById('p-img').value = reader.result;
+      document.getElementById('p-img-preview').src = reader.result;
+      document.getElementById('p-img-preview').style.display = 'block';
+    }
+    reader.readAsDataURL(file);
+  }
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(`${tab}-tab`).classList.add('active');
+  }
+
+  window.handleLogin = function(type) {
+    let email, pass;
+    if(type === 'user') {
+      email = document.getElementById('login-email').value;
+      pass = document.getElementById('login-pass').value;
+    } else if(type === 'admin') {
+      email = document.getElementById('admin-email').value;
+      pass = document.getElementById('admin-pass').value;
+    }
+
+    const user = users.find(u => u.email === email && u.pass === pass);
+
+    if(user) {
+      currentUser = user;
+      saveUsers();
+      closeAuth();
+      if(user.role === 'admin') {
+        loadAdminPanel();
+        toggleAdmin();
+      }
+      alert("Login Successful! Welcome " + user.name);
+    } else {
+      alert("ইমেইল অথবা পাসওয়ার্ড ভুল!");
+    }
+  }
+
+  window.userRegister = function() {
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-pass').value;
+    if(users.find(u => u.email === email)) return alert("এই ইমেইল দিয়ে আগে একাউন্ট আছে!");
+    users.push({name, email, pass, role: "user"});
+    saveUsers(); alert("রেজিস্টার সফল!");
+  }
+  window.logout = function() { currentUser = null; saveUsers(); location.reload(); }
+  function closeAuth() { document.getElementById('auth-modal').classList.remove('active'); document.body.classList.remove('no-scroll'); }
+
+  window.searchProducts = function() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    loadProducts(products.filter(p => p.name.toLowerCase().includes(query)));
+  }
+
+  window.filterProducts = function(type) {
+    document.querySelectorAll('.offer-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    if(type === 'all') { document.getElementById('section-title').innerText = '✨ All Products'; loadProducts(); }
+    else { document.getElementById('section-title').innerText = type === 'hot'? '🔥 Hot Deals' : '💎 Premium Cashback'; loadProducts(products.filter(p => p.category === type)); }
+  }
+
+  window.loadProducts = function(filtered = products) {
+    const list = document.getElementById('product-list');
+    if(filtered.length === 0) { list.innerHTML = "<p style='text-align:center;'>কোনো পণ্য পাওয়া যায়নি</p>"; return; }
+    list.innerHTML = '';
+    filtered.forEach(p => {
+      list.innerHTML += `
+        <div class="product-card">
+          <span class="tag">${p.tag}</span>
+          <img src="${p.img}">
+          <h4>${p.name}</h4>
+          <div><span class="price">৳${p.price}</span> <s style="font-size:12px;">৳${p.old}</s></div>
+          <button class="order-whatsapp" onclick="orderWhatsApp('${p.name}', ${p.price}, '${p.img}')">💬 WhatsApp এ অর্ডার</button>
+        </div>
+      `;
+    });
+  }
+
+  window.toggleAdmin = function() { document.getElementById('admin-panel').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
+  window.loadAdminPanel = async function() {
+    await loadProductsFromFirebase();
+    const list = document.getElementById('admin-product-list');
+    list.innerHTML = '';
+    products.forEach(p => {
+      list.innerHTML += `<div style="background:rgba(255,255,255,0.8);padding:10px;border-radius:10px;margin-bottom:10px;"><b>${p.name}</b> - ৳${p.price}<br><button onclick="deleteProduct('${p.id}')" style="background:red;color:#fff;border:none;padding:5px 10px;border-radius:5px;margin-top:5px;">Delete</button></div>`;
+    });
+  }
+  window.showAddProductForm = function() {
+    document.getElementById('p-img-preview').style.display = 'none';
+    document.getElementById('product-modal').classList.add('active');
+  }
+  window.closeProductModal = function() { document.getElementById('product-modal').classList.remove('active'); }
+
+  window.saveProduct = async function() {
+    const newP = {
+      name: document.getElementById('p-name').value,
+      price: parseInt(document.getElementById('p-price').value),
+      old: parseInt(document.getElementById('p-old').value),
+      img: document.getElementById('p-img').value,
+      tag: document.getElementById('p-tag').value,
+      category: document.getElementById('p-category').value
+    };
+    if(!newP.name ||!newP.img) return alert("নাম এবং ছবি দিন!");
+    try {
+      await addDoc(collection(db, "products"), newP);
+      alert("পণ্য সফলভাবে যোগ হয়েছে!");
+      loadProductsFromFirebase(); loadAdminPanel(); closeProductModal();
+    } catch(e) {
+      alert("Error: " + e.message);
+    }
+  }
+  window.deleteProduct = async function(id) {
+    await deleteDoc(doc(db, "products", id));
+    loadProductsFromFirebase(); loadAdminPanel();
+  }
+
+  // UPDATED: WhatsApp e ekhon chobi soho jabe
+  window.orderWhatsApp = function(name, price) {
+    let message = `*অর্ডার রিকোয়েস্ট - Glamora Mall*%0A%0A` +
+                  `*পণ্যের নাম:* ${name}%0A` +
+                  `*দাম:* ৳${price}%0A` +
+                  
+                  `আমার নাম ও ঠিকানা:`;
+
+    window.open(`https://wa.me/${YOUR_NUMBER}?text=${message}`, '_blank');
+  }
+</script>
+</body>
+</html>
